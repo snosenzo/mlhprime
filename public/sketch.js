@@ -3,17 +3,28 @@
 function setup() {
 	createCanvas(1920, 1080);
 	background(51);
-	posx = 0;
-	posy = 0;
 	noStroke();
+	/*try {
+		img = loadImage("currCanvas.jpg");
+		image(img, 0, 0);
+	} catch(exception){
+		console.log("Error: "+ exception);
+	}*/
 	ucol = color(int(random(255)), int(random(255)), int(random(255)));
-	socket = io.connect('10.20.2.67:3000');
+	socket = io.connect('52.90.112.43:3000');
 	socket.on('mouse', newDrawing);
-	mode = 'circle';
+
+	/*$.ajax({
+		url: "getPixels",
+		type: "get"
+	}).done(rePaint);*/
+
+	mode = 'free';
 	linState = null;
 	freeStrokeTog = false;
 	smooth();
-
+	noStroke();
+	changed = false;
 	modes = {
 		'circle': newCirc,
 		'text': newText,
@@ -24,22 +35,54 @@ function setup() {
 
 }
 
+/*function rePaint(data){
+
+	if(data.pixels!=null){
+
+		console.log("repainting");
+		loadPixels();
+		var d = pixelDensity();
+		var imagePixlen = 4 * (width * d) * (height * d);
+		for (var i = 0; i < imagePixlen; i+=4) {
+		  pixels[i] = data.pixels[i];
+		  pixels[i+1] = data.pixels[i+1];
+		  pixels[i+2] = data.pixels[i+2];
+		  pixels[i+3] = data.pixels[i+3];
+		}
+		updatePixels();
+		console.log("done repainting");
+
+	}
+	
+}*/
+
 function newDrawing(data){
 	modes[data.mode](data);
 }
 function draw(){
-	translate(posx, posy);
+	/*if(changed == true){
+		loadPixels();
+		data = { 'pixels': pixels	};
+		console.log(pixels.length);
+		$.ajax({
+			url: "/setPixels",
+			type: "post",
+			data: data
+		}).done(function(data) {
 
-}
-function mousePressed(){
-	if(mode == 'move'){
-		var x1 = mouseX;
-		var y1 = mouseY;
+		updatePixels();
+		//saveCanvas("currCanvas", "jpg");
+		changed = false;
+		});
 
 	}
+	*/
 }
 
+
 function mouseDragged(){
+	changed = true;
+	//console.log("dragged");
 	//console.log('Sending:' + mouseX+","+mouseY);
 	if(mode == 'circle'){
 		var data = {
@@ -87,16 +130,18 @@ function mouseDragged(){
 			socket.emit('mouse', data);
 			x1 = x2;
 			y1 = y2;
+			
 	
 		}
 	}
-	if(mode == 'move'){
 
-	}
 }
 
 function mouseClicked(){
+	
+	console.log("clicked");
 	if(mode == 'circle'){
+		changed = true;
 		var data = {
 			mode: 'circle',
 			x: int(mouseX),
@@ -111,6 +156,7 @@ function mouseClicked(){
 	  	ellipse(mouseX, mouseY, 20 ,20);
 	}
 	if(mode == 'text'){
+		changed = true;
 		textSize(32);
 		fill(ucol);
 		txt = 'Node.js is the only real dev language';
@@ -134,6 +180,7 @@ function mouseClicked(){
 			y1 = mouseY;
 			linState = 1;
 		} else {
+			changed = true;
 			x2 = mouseX;
 			y2 = mouseY;
 			stroke(ucol)
@@ -160,6 +207,8 @@ function mouseClicked(){
 }
 
 function mouseReleased(){
+	changed = true;
+	console.log("released");
 	if(mode == 'free'){
 		x1 = null;
 		y1 = null;
