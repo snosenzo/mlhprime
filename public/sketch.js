@@ -12,6 +12,7 @@ function setup() {
 	}*/
 	ucol = color(int(random(255)), int(random(255)), int(random(255)));
 	socket = io.connect('52.90.112.43:3000');
+	//socket = io.connect('10.20.6.26:3000')
 	socket.on('mouse', newDrawing);
 
 	/*$.ajax({
@@ -29,9 +30,11 @@ function setup() {
 		'circle': newCirc,
 		'text': newText,
 		'line': newLine,
-		'free': newFree
+		'free': newFree,
+		'square': newSquare
 
 	}
+	rectMode(CENTER);
 
 }
 
@@ -98,6 +101,20 @@ function mouseDragged(){
 		fill(ucol);
 	  	ellipse(mouseX, mouseY, 20 ,20);
 	}
+	if(mode == 'square'){
+		var data = {
+			mode: 'square',
+			x: int(mouseX),
+			y: int(mouseY),
+			colr: red(ucol),
+			colg: green(ucol),
+			colb: blue(ucol)
+		}
+
+		socket.emit('mouse', data);
+		fill(ucol);
+	  	rect(mouseX, mouseY, 20 ,20);
+	}
 	if(mode == 'free'){
 		if(!linState){
 			x1 = mouseX;
@@ -155,11 +172,27 @@ function mouseClicked(){
 		fill(ucol);
 	  	ellipse(mouseX, mouseY, 20 ,20);
 	}
+	if(mode == 'square'){
+		changed = true;
+		var data = {
+			mode: 'square',
+			x: int(mouseX),
+			y: int(mouseY),
+			colr: red(ucol),
+			colg: green(ucol),
+			colb: blue(ucol)
+		}
+
+		socket.emit('mouse', data);
+		fill(ucol);
+	  	rect(mouseX, mouseY, 20 ,20);
+	}
 	if(mode == 'text'){
 		changed = true;
 		textSize(32);
 		fill(ucol);
-		txt = 'Node.js is the only real dev language';
+		var txt = "nodejs is the only real dev language";
+		console.log(txt);
 		text(txt, mouseX, mouseY);
 		var data = {
 			mode: 'text',
